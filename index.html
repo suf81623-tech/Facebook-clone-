@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Facebook Clone – LocalStorage</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #f0f2f5; }
+    header { background: #1877f2; color: white; padding: 10px 15px; }
+    .container { max-width: 600px; margin: 20px auto; }
+    .post-box, .post { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    textarea, input { width: 100%; padding: 8px; margin-top: 6px; }
+    button { background: #1877f2; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-top: 6px; }
+    img, video { max-width: 100%; margin-top: 10px; border-radius: 6px; }
+    .comment, .reply { background: #f0f2f5; padding: 6px 10px; border-radius: 12px; margin-top: 5px; font-size: 13px; }
+    .reply { margin-left: 20px; }
+    .actions { display: flex; gap: 10px; font-size: 14px; margin-top: 8px; }
+    a.download { font-size: 13px; display: inline-block; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+<header><h2>Mini Facebook</h2></header>
+
+<div class="container">
+  <div class="post-box">
+    <textarea id="postText" placeholder="What's on your mind?"></textarea>
+    <input type="file" id="media" accept="image/*,video/*" />
+    <button onclick="createPost()">Post</button>
+  </div>
+  <div id="feed"></div>
+</div>
+
+<script>
+let posts = JSON.parse(localStorage.getItem('posts')) || [];
+
+function savePosts() {
+  localStorage.setItem('posts', JSON.stringify(posts));
+}
+
+function renderPosts() {
+  document.getElementById('feed').innerHTML = '';
+  posts.forEach((p, i) => drawPost(p, i));
+}
+
+function createPost() {
+  const text = postText.value;
+  const file = media.files[0];
+  if (!text && !file) return;
+
+  const post = { text, media: null, type: null, comments: [] };
+
+  if (file) {
+    post.type = file.type;
+    const reader = new FileReader();
+    reader.onload = () => {
+      post.media = reader.result;
+      posts.unshift(post);
+      savePosts();
+      renderPosts();
+    };
+    reader.readAsDataURL(file);
+  } else {
+    posts.unshift(post);
+    savePosts();
+    renderPosts();
+  }
+
+  postText.value = '';
+  media.value = '';
+}
+
+function drawPost(post, index) {
+  const div = document.createElement('div');
+  div.className = 'post';
+
+  if (post.text) div.innerHTML += `<p>${post.text}</p>`;
+
+  if (post.media) {
+    if (post.type.startsWith('image')) {
+      div.innerHTML += `<img src="${post.media}"><br><a class='download' href='${post.media}' download>⬇ Download image</a>`;
+    } else {
+      div.innerHTML += `<video src="${post.media}" controls></video><br><a class='download' href='${post.media}' download>⬇ Download video</a>`;
+    }
+  }
+
+  const commentInput = document.createElement('input');
+  commentInput.placeholder = 'Write a comment...';
+  commentInput.onkeypress = e => {
+    if (e.key === 'Enter' && commentInput.value) {
+      post.comments.push({ text: commentInput.value, replies: [] });
+      savePosts();
+      renderPosts();
+    }
+  };
+
+  div.appendChild(commentInput);
+
+  post.comments.forEach((c, ci) => {
+    const cDiv = document.createElement('div');
+    cDiv.className = 'comment';
+    cDiv.textContent = c.text;
+
+    const replyInput = document.createElement('input');
+    replyInput.placeholder = 'Reply...';
+    replyInput.onkeypress = e => {
+      if (e.key === 'Enter' && replyInput.value) {
+        c.replies.push(replyInput.value);
+        savePosts();
+        renderPosts();
+      }
+    };
+
+    cDiv.appendChild(replyInput);
+
+    c.replies.forEach(r => {
+      const rDiv = document.createElement('div');
+      rDiv.className = 'reply';
+      rDiv.textContent = r;
+      cDiv.appendChild(rDiv);
+    });
+
+    div.appendChild(cDiv);
+  });
+
+  document.getElementById('feed').appendChild(div);
+}
+
+renderPosts();
+</script>
+
+</body>
+</html>
