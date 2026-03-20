@@ -1,29 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Camera Test (Your Own Device Only)</title>
+  <style>
+  body {
+  background: #111;
+  color: white;
+  font-family: Arial;
+  text-align: center;
+  padding-top: 50px;
+}
+
+button {
+  padding: 12px 25px;
+  background: gold;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+input {
+  padding: 10px;
+  width: 250px;
+  margin: 5px;
+}
+    
+  </style>
+  <title>Premium Access</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <video id="video" width="640" height="480" autoplay></video>
-    <button id="start">Start Camera</button>
-    <p id="status"></p>
 
-    <script>
-        const startButton = document.getElementById('start');
-        const video = document.getElementById('video');
-        const status = document.getElementById('status');
+<h1>🔥 Join Premium WhatsApp Group</h1>
+<p>Pay ₦2000 to continue</p>
 
-        startButton.addEventListener('click', async () => {
-            try {
-                // Request camera access (this will trigger the browser permission prompt)
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-                video.srcObject = stream;
-                status.textContent = 'Camera is active (only visible to you).';
-            } catch (error) {
-                status.textContent = 'Camera access denied or not available.';
-                console.error(error);
-            }
-        });
-    </script>
+<button onclick="pay()">Pay Now</button>
+
+<script src="https://js.paystack.co/v1/inline.js"></script>
+
+<script>
+function pay(){
+  let handler = PaystackPop.setup({
+    key: "pk_test_ceeeb15cb1285cf8ea6b0b8311a32befe74bc680",
+    email: "suf81623@gmail.com",
+    amount: 2000 * 100, // kobo
+    currency: "NGN",
+
+    callback: function(response){
+      sessionStorage.setItem("paid", "true");
+      sessionStorage.setItem("ref", response.reference);
+
+      alert("Payment successful!");
+      window.location.href = "form.html";
+    },
+
+    onClose: function(){
+      alert("Payment cancelled");
+    }
+  });
+
+  handler.openIframe();
+}
+</script>
+
 </body>
-	</html>
+</html>
